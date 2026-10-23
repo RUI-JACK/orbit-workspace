@@ -37,6 +37,7 @@ tests/*
 !tests/fullscreen-desktop.js
 !tests/updates.js
 !tests/electron-fetch.js
+!tests/publish-update.js
 !tests/release-feed.js
 !tests/automation-recovery.js
 !tests/operations-safety.js
