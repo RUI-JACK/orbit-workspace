@@ -1,0 +1,20 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const {pipeline}=require('node:stream/promises'),{promisify}=require('node:util'),yazl=require('yazl');
+const {OrbitCore}=require('../core');
+const root=fs.mkdtempSync(path.join(os.tmpdir(),'orbit-backup-safety-')),results=[];
+const pass=name=>{results.push({name,pass:true});console.log('PASS',name);};
+(async()=>{
+ const dir=path.join(root,'data');const old=new OrbitCore(dir);const p=old.saveProfile({name:'Existing',proxy:{server:'http://127.0.0.1:7890'}});
+ delete old.state.proxyPool;fs.writeFileSync(old.file,JSON.stringify(old.state));
+ const core=new OrbitCore(dir);assert.equal(core.state.proxyPool.length,1);assert.equal(core.get(p.id).proxy.server,p.proxy.server);pass('upgrade seeds proxy pool without changing existing environments');
+ const writing=core.exportWorkspace(path.join(root,'lock.orbitbackup'),'test-password');assert.throws(()=>core.saveProfile({name:'conflict'}),/创建备份/);await assert.rejects(core.start(p.id),/创建备份/);await writing;assert.equal(core.workspaceBusy,'');pass('backup locks conflicting mutations until complete');
+ await assert.rejects(core.exportWorkspace(path.join(root,'missing','failed.orbitbackup'),'test-password'));assert.equal(core.workspaceBusy,'');assert.ok(!fs.readdirSync(root).some(n=>n.endsWith('.tmp')));pass('failed export releases lock and removes partial output');
+ const id=crypto.randomUUID(),zip=new yazl.ZipFile(),zipPath=path.join(root,'malicious.zip');
+ zip.addBuffer(Buffer.from(JSON.stringify({format:'orbit-backup-v1',profiles:[{id,name:'Unsafe'}],proxyPool:[]})),'manifest.json');
+ zip.addBuffer(Buffer.from('../../outside'),'profiles/'+id+'/unsafe-link',{mode:0o120777});zip.end();await pipeline(zip.outputStream,fs.createWriteStream(zipPath));
+ const salt=crypto.randomBytes(32),iv=crypto.randomBytes(12),header=Buffer.concat([Buffer.from('ORBITBK1'),salt,iv]);const key=await promisify(crypto.scrypt)('test-password',salt,32,{N:32768,r:8,p:1,maxmem:64*1024*1024});const cipher=crypto.createCipheriv('aes-256-gcm',key,iv);cipher.setAAD(header);
+ const encrypted=Buffer.concat([header,cipher.update(fs.readFileSync(zipPath)),cipher.final(),cipher.getAuthTag()]);key.fill(0);const malicious=path.join(root,'malicious.orbitbackup');fs.writeFileSync(malicious,encrypted);
+ const previous=JSON.stringify(core.state);await assert.rejects(core.restoreWorkspace(malicious,'test-password'),/符号链接/);assert.equal(JSON.stringify(core.state),previous);assert.ok(!fs.readdirSync(dir).some(n=>n.startsWith('.restore-')));pass('authenticated archive with symlink rejected without changing existing data');
+ fs.writeFileSync(path.join(__dirname,'../verification/backup-safety-results.json'),JSON.stringify({at:new Date().toISOString(),results},null,2));
+})().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>{if(path.resolve(root).startsWith(path.join(os.tmpdir(),'orbit-backup-safety-')))fs.rmSync(root,{recursive:true,force:true});});

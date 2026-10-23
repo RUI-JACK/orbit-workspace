@@ -1,0 +1,28 @@
+{
+  "name": "orbit-local-workspace",
+  "version": "1.9.2",
+  "description": "本地多浏览器环境工作台",
+  "main": "main.js",
+  "author": "Orbit Local",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node tests/integration.js",
+    "package": "node scripts/package.js",
+    "installer": "node scripts/build-installer.js",
+    "prepare:resources": "node scripts/prepare-resources.js",
+    "release:prepare": "node scripts/publish-github.js"
+  },
+  "dependencies": {
+    "camoufox": "0.5.8",
+    "koffi": "3.3.3",
+    "playwright-core": "1.62.0",
+    "yauzl": "3.4.0",
+    "yazl": "3.3.1"
+  },
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "electron": "44.9.0",
+    "electron-builder": "26.15.3"
+  }
+}

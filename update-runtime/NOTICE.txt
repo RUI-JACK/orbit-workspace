@@ -1,0 +1,3 @@
+Node.js v24.21.0 standalone update helper runtime
+Source: https://nodejs.org/
+License source: https://raw.githubusercontent.com/nodejs/node/v24.21.0/LICENSE
