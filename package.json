@@ -1,6 +1,6 @@
 {
   "name": "orbit-local-workspace",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "本地多浏览器环境工作台",
   "main": "main.js",
   "author": "Orbit Local",

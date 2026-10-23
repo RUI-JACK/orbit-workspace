@@ -1,4 +1,4 @@
-# Orbit 环境工作台 1.9.2
+# Orbit 环境工作台 1.9.3
 
 本地多浏览器环境管理器。双击桌面「Orbit 环境工作台」启动，无需 Node.js 或命令行。启动网址留空时默认打开 Google 搜索首页；自定义网址优先。
 
@@ -8,13 +8,15 @@
 
 Windows x64，Node.js 24.21.0 或兼容的 24.x 版本。运行 `npm ci`，然后运行 `npm run prepare:resources` 下载并校验官方内核、固定指纹模型与更新助手运行库，最后运行 `npm run installer`。开发运行使用 `npm start`。大型上游二进制不放入 Git 仓库，来源及许可证见 `THIRD_PARTY.md`。
 
-## 1.9.2 GitHub 版本发布与更新
+## 1.9.3 GitHub 版本发布与更新
 
 程序默认更新地址为 `https://github.com/RUI-JACK/orbit-workspace/releases/latest/download/update.json`。旧的空地址首次迁移到此地址，保留自定义地址和自动更新开关。首次安装下载完整 EXE，程序更新下载 Ed25519 签名的代码 ZIP；内核更新仍走官方兼容频道。维护者发布流程见 `docs/UPDATES.md`。
 
+1.9.2 及更早版本请先下载本次 EXE 覆盖安装一次：旧版 Electron 下载接口不能正确处理 GitHub 跳转，1.9.3 已修复。后续版本可通过程序内的签名代码更新升级。
+
 ## Windows 安装包
 
-运行 `npm run installer`，使用当前源码和前端重新打包，然后生成 `releases/installers/Orbit-Setup-1.9.2-win-x64.exe`。安装包内置狐狸内核和更新助手，提供中英文向导、当前用户安装、安装目录选择、桌面与开始菜单快捷方式及卸载入口。升级或卸载时检查目标目录中的运行进程，要求先关闭程序，不强制结束环境；卸载保留工作台数据。
+运行 `npm run installer`，使用当前源码和前端重新打包，然后生成 `releases/installers/Orbit-Setup-1.9.3-win-x64.exe`。安装包内置狐狸内核和更新助手，提供中英文向导、当前用户安装、安装目录选择、桌面与开始菜单快捷方式及卸载入口。升级或卸载时检查目标目录中的运行进程，要求先关闭程序，不强制结束环境；卸载保留工作台数据。
 
 分发时只发送安装 EXE 与安装说明即可。发布构建排除环境数据、备份、验证材料和更新签名私钥；不附带发布者的代理、Cookie 或扩展库。使用者说明见 `docs/INSTALL.md`，发布文件夹同时生成 SHA-256 和版本清单。当前没有 Windows 发布者代码签名。安装构建在 Windows 上执行，构建工具 electron-builder 固定版本并记录在锁文件中。
 

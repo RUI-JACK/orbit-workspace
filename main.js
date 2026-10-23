@@ -5,6 +5,7 @@ const fs=require('node:fs');
 const {OrbitCore}=require('./core');
 const {setDisplayDefaults}=require('./fingerprint-engine');
 const {UpdateManager}=require('./update-manager');
+const {createUpdateFetcher}=require('./electron-fetch');
 const {installAndRestart}=require('./update-install');
 app.setName('Orbit 环境工作台');
 if(process.env.ORBIT_TEST_DATA)app.setPath('userData',process.env.ORBIT_TEST_DATA);
@@ -18,7 +19,7 @@ app.on('second-instance',()=>{if(win){if(win.isMinimized())win.restore();win.sho
 app.whenReady().then(async()=>{
   const codec={encode:v=>{if(!safeStorage.isEncryptionAvailable())throw Error('Windows 本地加密服务不可用');return safeStorage.encryptString(v);},decode:v=>safeStorage.decryptString(v)};
   core=new OrbitCore(app.getPath('userData'),codec);
-  core.updates=new UpdateManager(core,{fetcher:net.fetch.bind(net),installRoot:app.isPackaged?path.dirname(process.execPath):null});
+  core.updates=new UpdateManager(core,{fetcher:createUpdateFetcher(net),installRoot:app.isPackaged?path.dirname(process.execPath):null});
   if(!healthJob&&core.updates.state.settings.autoDownload&&core.updates.state.app.status==='ready'){try{await installAndRestart(core,app);return;}catch(e){core.updates.fail('app',e);core.updates.save();}}
   win=new BrowserWindow({width:1320,height:860,minWidth:1000,minHeight:680,title:'Orbit 环境工作台',icon:path.join(process.resourcesPath,'orbit.ico'),backgroundColor:'#f5f4f0',autoHideMenuBar:true,show:false,webPreferences:{preload:path.join(__dirname,'preload.js'),nodeIntegration:false,contextIsolation:true,sandbox:true}});
   win.on('close',event=>{if(core.workspaceBusy){event.preventDefault();dialog.showMessageBox(win,{type:'info',message:'正在'+core.workspaceBusy+'，完成后即可退出。'});}});
